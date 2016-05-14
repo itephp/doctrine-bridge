@@ -44,7 +44,7 @@ class Service{
 
 		);
 
-		$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
+		$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode,ITE_ROOT.'/cache');
 		$this->entityManager = EntityManager::create($dbParams, $config);
 
 		$this->entityManager->getEventManager()->addEventListener(array('onFlush'), $eventHandler);
