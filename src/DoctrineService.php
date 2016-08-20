@@ -18,43 +18,66 @@ use ItePHP\Doctrine\EventHandler;
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
-use ItePHP\Contener\ServiceConfig;
-use Doctrine\DBAL\Event\Listeners\MysqlSessionInit;
-use ItePHP\Core\EventManager;
 
-class Service{
+use Doctrine\DBAL\Event\Listeners\MysqlSessionInit;
+
+use ItePHP\Core\EventManager;
+use ItePHP\Core\Enviorment;
+
+class DoctrineService{
 	
+	/**
+	 *
+	 * @var EntityManager
+	 */
 	private $entityManager;
 
-	public function __construct(ServiceConfig $serviceConfig,EventManager $eventManager){
+	/**
+	 *
+	 * @param Enviorment $enviorment
+	 * @param EventManager $eventManager
+	 * @param string $driver
+	 * @param string $username
+	 * @param string $password
+	 * @param string $dbname
+	 * @param string $host
+	 * @param int $port
+	 */
+	public function __construct(Enviorment $enviorment,EventManager $eventManager,$driver,$username,$password,$dbname
+		,$host,$port){
 
 		$paths = array();
-		$isDevMode = true;
 		$eventHandler=new EventHandler($eventManager);
 
-		// the connection configuration
 		$dbParams = array(
-		    'driver'   => $serviceConfig->get('driver'),
-		    'user'     => $serviceConfig->get('user'),
-		    'password' => $serviceConfig->get('password'),
-		    'dbname'   => $serviceConfig->get('dbname'),
-		    'host'   => $serviceConfig->get('host'),
+		    'driver'   => $driver,
+		    'user'     => $username,
+		    'password' => $password,
+		    'dbname'   => $dbname,
+		    'host'   => $host,
 	        'charset' => 'utf8',
-	        'driverOptions' => array(1002=>'SET NAMES utf8')
-
 		);
 
-		$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode,ITE_ROOT.'/cache');
+		$config = Setup::createAnnotationMetadataConfiguration($paths, $enviorment->isDebug(),$enviorment->getCachePath());
 		$this->entityManager = EntityManager::create($dbParams, $config);
 
 		$this->entityManager->getEventManager()->addEventListener(array('onFlush'), $eventHandler);
 		$this->entityManager->getEventManager()->addEventListener(array('postFlush'), $eventHandler);
 	}
 
+	/**
+	 *
+	 * @return EntityManager
+	 */
 	public function getEntityManager(){
 		return $this->entityManager;
 	}
 
+	/**
+	 *
+	 * @param string $class
+	 * @return EntityManager
+	 */
 	public function getRepository($class){
 		return $this->getEntityManager()->getRepository($class);
 	}

@@ -16,7 +16,7 @@
 namespace ItePHP\Doctrine;
 use ItePHP\Core\Container;
 
-class Snippet {
+class DoctrineSnippet {
 	
 	public function getDoctrine(Container $container){
 		return $container->getService('doctrine');
