@@ -14,54 +14,115 @@
  */
 
 namespace ItePHP\Doctrine;
+
+use Doctrine\Common\Persistence\ObjectRepository;
 use ItePHP\Core\Container;
 
+/**
+ * Class DoctrineSnippet
+ * @package ItePHP\Doctrine
+ */
 class DoctrineSnippet {
-	
+
+    /**
+     * @param Container $container
+     * @return DoctrineService
+     */
 	public function getDoctrine(Container $container){
 		return $container->getService('doctrine');
 	}
 
+    /**
+     * @param Container $container
+     * @param $entity
+     * @return ObjectRepository
+     */
 	public function getRepository(Container $container,$entity){
-		return $container->getDoctrine()->getRepository('Entity\\'.$entity);
+		return $this->getDoctrine($container)->getRepository('Entity\\'.$entity);
 	}
 
+    /**
+     * @param Container $container
+     * @param $entity
+     * @param array $conditions
+     * @param array $orders
+     * @return array
+     */
 	public function find(Container $container,$entity,$conditions=array(),$orders=array()){
-		return $container->getRepository($entity)->findBy($conditions,$orders);
+		return $this->getRepository($container,$entity)->findBy($conditions,$orders);
 	}
 
+    /**
+     * @param Container $container
+     * @param $entity
+     * @param array $conditions
+     * @param array $orders
+     * @return array
+     */
 	public function findOne(Container $container,$entity,$conditions=array(),$orders=array()){
-		return $container->getRepository($entity)->findOneBy($conditions,$orders);
+		return $this->getRepository($container,$entity)->findBy($conditions,$orders,1);
 	}
 
+    /**
+     * @param Container $container
+     */
 	public function flush(Container $container){
-		return $container->getDoctrine()->getEntityManager()->flush();
+		return $this->getDoctrine($container)->getEntityManager()->flush();
 	}
 
+    /**
+     * @param Container $container
+     * @param $entity
+     */
 	public function remove(Container $container,$entity){
-		return $container->getDoctrine()->getEntityManager()->remove($entity);
+		return $this->getDoctrine($container)->getEntityManager()->remove($entity);
 	}
 
+    /**
+     * @param Container $container
+     * @param $dql
+     * @return \Doctrine\ORM\Query
+     */
 	public function createQuery(Container $container,$dql){
-		return $container->getDoctrine()->getEntityManager()->createQuery($dql);
+		return $this->getDoctrine($container)->getEntityManager()->createQuery($dql);
 	}
 
+    /**
+     * @param Container $container
+     * @param $entity
+     */
 	public function persist(Container $container,$entity){
-		return $container->getDoctrine()->getEntityManager()->persist($entity);
+		return $this->getDoctrine($container)->getEntityManager()->persist($entity);
 	}
 
+    /**
+     * @param Container $container
+     * @param $sql
+     * @param array $parameters
+     * @return array
+     */
 	public function executeQuery(Container $container,$sql,$parameters=array()){
-		$stmt=$container->getDoctrine()->getEntityManager()->getConnection()->prepare($sql);
+		$stmt=$this->getDoctrine($container)->getEntityManager()->getConnection()->prepare($sql);
 		$stmt->execute($parameters);
     	return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
+    /**
+     * @param Container $container
+     * @return \Doctrine\DBAL\Connection
+     */
 	public function getConnection(Container $container){
-		return $container->getDoctrine()->getEntityManager()->getConnection();
+		return $this->getDoctrine($container)->getEntityManager()->getConnection();
 	}
 
+    /**
+     * @param Container $container
+     * @param $value
+     * @return string
+     */
 	public function escape(Container $container,$value){
-		return $container->getDoctrine()->getEntityManager()->getConnection()->quote($value);
+		return $this->getDoctrine($container)->getEntityManager()->getConnection()->quote($value);
 	}	
 
 }
+
