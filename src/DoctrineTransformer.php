@@ -15,18 +15,10 @@
 
 namespace ItePHP\Doctrine;
 
-use ItePHP\Component\Form\Transformer;
-use ItePHP\Component\Form\FormBuilder;
-use ItePHP\Component\Form\TextField;
-use ItePHP\Component\Form\TextareaField;
-use ItePHP\Component\Form\NumberField;
-use ItePHP\Component\Form\SelectField;
-use ItePHP\Component\Form\CheckboxField;
-use ItePHP\Component\Form\DateField;
-
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\ClassMetadata;
-
-use ItePHP\Doctrine\Exception\DoctrineTypeNotSupportedException;
+use Doctrine\ORM\PersistentCollection;
+use ItePHP\Component\Form\Transformer;
 
 /**
  * Map entity to form.
@@ -36,16 +28,26 @@ use ItePHP\Doctrine\Exception\DoctrineTypeNotSupportedException;
  */
 class DoctrineTransformer implements Transformer{
 
+    /**
+     * @var string
+     */
 	private $entityName;
+
+    /**
+     * @var DoctrineService
+     */
 	private $doctrineService;
+
+    /**
+     * @var object
+     */
 	private $entity;
+
 	/**
-	 * @param \ItePHP\Doctrine\Service\Doctrine $doctrineService
+	 * @param DoctrineService $doctrineService
 	 * @param string $entityName
-	 * @param array $filter
-	 * @since 0.22.0
 	 */
-	public function __construct($doctrineService,$entityName){
+	public function __construct(DoctrineService $doctrineService,$entityName){
 		$this->entityName=$entityName;
 		$this->doctrineService=$doctrineService;
 	}
@@ -56,7 +58,7 @@ class DoctrineTransformer implements Transformer{
 	public function encode($entity){
 		$this->entity=$entity;
 
-		$values=array();
+		$values=[];
 		foreach(get_class_methods($entity) as $method){
 			if(preg_match('/^get(.*)$/',$method,$finds)){
 				$data=$entity->$method();
@@ -68,7 +70,7 @@ class DoctrineTransformer implements Transformer{
 						$data=$data->getId();
 					else if($data instanceof \DateTime)
 						$data=$data->format('Y-m-d');
-					else if($data instanceof \Doctrine\ORM\PersistentCollection){
+					else if($data instanceof PersistentCollection){
 						$records=array();
 						foreach($data as $record){
 							$records[]=$record->getId();
@@ -116,11 +118,22 @@ class DoctrineTransformer implements Transformer{
 		
 	}
 
+    /**
+     * @param object $entity
+     * @param string $key
+     * @param mixed $value
+     */
 	public function decodeField($entity,$key,$value){
 		$methodName='set'.ucfirst($key);
 		$entity->$methodName($value);
 	}
 
+    /**
+     * @param ClassMetadata $metaData
+     * @param object $entity
+     * @param string $key
+     * @param mixed $value
+     */
 	private function decodeAssociation($metaData,$entity,$key,$value){
 		if($metaData->isSingleValuedAssociation($key)){
 			$this->decodeAssociationSingle($metaData,$entity,$key,$value);
@@ -131,13 +144,19 @@ class DoctrineTransformer implements Transformer{
 
 	}
 
+    /**
+     * @param ClassMetadata $metaData
+     * @param object $entity
+     * @param string $key
+     * @param mixed $value
+     */
 	private function decodeAssociationSingle($metaData,$entity,$key,$value){
 		if($value==''){
 			$value=null;
 		}
 		else{
 			$targetEntityName=$metaData->getAssociationTargetClass($key);
-			$value=$this->doctrineService->getRepository($targetEntityName)->findOneById($value);
+			$value=$this->doctrineService->getRepository($targetEntityName)->findOneBy(['id'=>$value]);
 		}
 
 		$methodName='set'.ucfirst($key);
@@ -145,8 +164,17 @@ class DoctrineTransformer implements Transformer{
 
 	}
 
+    /**
+     * @param ClassMetadata$metaData
+     * @param object $entity
+     * @param string $key
+     * @param mixed $value
+     */
 	private function decodeAssociationMulti($metaData,$entity,$key,$value){
 		$methodName='get'.$key;
+        /**
+         * @var ArrayCollection $collection
+         */
 		$collection=$entity->$methodName();
 		$collection->clear();
 		if(!$value){
@@ -155,10 +183,9 @@ class DoctrineTransformer implements Transformer{
 
 		$targetEntityName=$metaData->getAssociationTargetClass($key);
 		foreach($value as $record){
-			$value=$this->doctrineService->getRepository($targetEntityName)->findOneById($record);
+			$value=$this->doctrineService->getRepository($targetEntityName)->findOneBy(['id'=>$record]);
 			$collection->add($value);
 		}
-
 	}
 
 }

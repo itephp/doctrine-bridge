@@ -19,19 +19,36 @@ use ItePHP\Core\EventManager;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 
+/**
+ * Class EventHandler
+ * @package ItePHP\Doctrine
+ */
 class EventHandler{
-	
+
+    /**
+     * @var EventManager
+     */
 	private $eventManager;
 
+    /**
+     * EventHandler constructor.
+     * @param EventManager $eventManager
+     */
 	public function __construct(EventManager $eventManager){
 		$this->eventManager=$eventManager;
 	}
 
+    /**
+     * @param OnFlushEventArgs $eventArgs
+     */
 	public function onFlush(OnFlushEventArgs $eventArgs){
 		$this->eventManager->fire('doctrine.onFlush',$eventArgs);
 
 	}
 
+    /**
+     * @param PostFlushEventArgs $eventArgs
+     */
 	public function postFlush(PostFlushEventArgs $eventArgs){
 		$this->eventManager->fire('doctrine.postFlush',$eventArgs);
 

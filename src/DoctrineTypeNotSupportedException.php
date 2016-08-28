@@ -15,8 +15,16 @@
 
 namespace ItePHP\Doctrine;
 
+/**
+ * Class DoctrineTypeNotSupportedException
+ * @package ItePHP\Doctrine
+ */
 class DoctrineTypeNotSupportedException extends \Exception{
-	
+
+    /**
+     * DoctrineTypeNotSupportedException constructor.
+     * @param string $type
+     */
 	public function __construct($type){
 		parent::__construct('Doctrine type '.$type.' not supported.');
 	}

@@ -14,16 +14,20 @@
  */
 namespace ItePHP\Doctrine;
 
-use ItePHP\Doctrine\EventHandler;
+use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ORM\EntityRepository;
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 
-use Doctrine\DBAL\Event\Listeners\MysqlSessionInit;
 
+use ItePHP\Core\Environment;
 use ItePHP\Core\EventManager;
-use ItePHP\Core\Enviorment;
 
+/**
+ * Class DoctrineService
+ * @package ItePHP\Doctrine
+ */
 class DoctrineService{
 	
 	/**
@@ -34,7 +38,7 @@ class DoctrineService{
 
 	/**
 	 *
-	 * @param Enviorment $enviorment
+	 * @param Environment $environment
 	 * @param EventManager $eventManager
 	 * @param string $driver
 	 * @param string $username
@@ -43,8 +47,8 @@ class DoctrineService{
 	 * @param string $host
 	 * @param int $port
 	 */
-	public function __construct(Enviorment $enviorment,EventManager $eventManager,$driver,$username,$password,$dbname
-		,$host,$port){
+	public function __construct(Environment $environment, EventManager $eventManager, $driver, $username, $password
+        , $dbname, $host, $port){
 
 		$paths = array();
 		$eventHandler=new EventHandler($eventManager);
@@ -58,7 +62,7 @@ class DoctrineService{
 	        'charset' => 'utf8',
 		);
 
-		$config = Setup::createAnnotationMetadataConfiguration($paths, $enviorment->isDebug(),$enviorment->getCachePath());
+		$config = Setup::createAnnotationMetadataConfiguration($paths, $environment->isDebug(),$environment->getCachePath());
 		$this->entityManager = EntityManager::create($dbParams, $config);
 
 		$this->entityManager->getEventManager()->addEventListener(array('onFlush'), $eventHandler);
@@ -76,7 +80,7 @@ class DoctrineService{
 	/**
 	 *
 	 * @param string $class
-	 * @return EntityManager
+	 * @return ObjectRepository
 	 */
 	public function getRepository($class){
 		return $this->getEntityManager()->getRepository($class);

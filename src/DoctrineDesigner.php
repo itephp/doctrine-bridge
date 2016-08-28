@@ -24,9 +24,8 @@ use ItePHP\Component\Form\SelectField;
 use ItePHP\Component\Form\CheckboxField;
 use ItePHP\Component\Form\DateField;
 
-use Doctrine\ORM\Mapping\ClassMetadata;
 
-use ItePHP\Doctrine\Exception\DoctrineTypeNotSupportedException;
+use Doctrine\ORM\Mapping\ClassMetadata;
 
 /**
  * Map entity to form.
@@ -36,16 +35,27 @@ use ItePHP\Doctrine\Exception\DoctrineTypeNotSupportedException;
  */
 class DoctrineDesigner implements Designer{
 
+    /**
+     * @var string
+     */
 	private $entityName;
+
+    /**
+     * @var DoctrineService
+     */
 	private $doctrineService;
-	
-	/**
-	 * @param \ItePHP\Doctrine\Service\Doctrine $doctrineService
+
+    /**
+     * @var string[]
+     */
+    private $filter;
+
+    /**
+	 * @param DoctrineService $doctrineService
 	 * @param string $entityName
-	 * @param array $filter
-	 * @since 0.18.0
+	 * @param string[] $filter
 	 */
-	public function __construct($doctrineService,$entityName,$filter=null){
+	public function __construct(DoctrineService $doctrineService,$entityName,$filter=null){
 		$this->entityName=$entityName;
 		$this->doctrineService=$doctrineService;
 		$this->filter=$filter;
@@ -82,23 +92,23 @@ class DoctrineDesigner implements Designer{
 		$type=$metaData->getTypeOfColumn($fieldName);
 		switch($type){
 			case 'string':
-				$formField=$this->createFieldString($metaData,$fieldName);
+				$formField=$this->createFieldString();
 			break;
 			case 'text':
-				$formField=$this->createFieldText($metaData,$fieldName);
+				$formField=$this->createFieldText();
 			break;
 			case 'bigint':
 			case 'integer':
 				$formField=$this->createFieldInteger($metaData,$fieldName);
 			break;
 			case 'boolean':
-				$formField=$this->createFieldBoolean($metaData,$fieldName);
+				$formField=$this->createFieldBoolean();
 			break;
 			case 'datetime':
-				$formField=$this->createFieldDateTime($metaData,$fieldName);
+				$formField=$this->createFieldDateTime();
 			break;
 			case 'decimal':
-				$formField=$this->createFieldDecimal($metaData,$fieldName);
+				$formField=$this->createFieldDecimal();
 			break;
 			default:
 				throw new DoctrineTypeNotSupportedException($type);
@@ -155,58 +165,85 @@ class DoctrineDesigner implements Designer{
 
 	}
 
+    /**
+     * @param object $entity
+     * @param bool $appendEmptyRecord
+     * @return string[][]
+     */
 	public static function entityToCollection($entity,$appendEmptyRecord){
-		$values=array();
+		$values=[];
 		if($appendEmptyRecord){
-			$values[]=array('value'=>'','label'=>'Select...');			
+			$values[]=['value'=>'','label'=>'Select...'];
 		}
 
 		foreach($entity as $record){
-			$values[]=array('value'=>$record->getId(),'label'=>htmlspecialchars($record->__toString()));
+			$values[]=['value'=>$record->getId(),'label'=>htmlspecialchars($record->__toString())];
 		}
 
 		return $values;
 	}
 
-	private function createFieldString($metaData,$fieldName){
-		$formField=new TextField(array());
+    /**
+     * @return TextField
+     */
+	private function createFieldString(){
+		$formField=new TextField([]);
 		return $formField;
 	}
 
-	private function createFieldDateTime($metaData,$fieldName){
-		$formField=new DateField(array());
+    /**
+     * @return DateField
+     */
+	private function createFieldDateTime(){
+		$formField=new DateField([]);
 		return $formField;
 	}
 
-	private function createFieldText($metaData,$fieldName){
-		$formField=new TextareaField(array());
+    /**
+     * @return TextareaField
+     */
+	private function createFieldText(){
+		$formField=new TextareaField([]);
 		return $formField;
 	}
 
-	private function createFieldBoolean($metaData,$fieldName){
-		$formField=new CheckboxField(array());
+    /**
+     * @return CheckboxField
+     */
+	private function createFieldBoolean(){
+		$formField=new CheckboxField([]);
 		return $formField;
 	}
 
-	private function createFieldDecimal($metaData,$fieldName){
-		$formField=new NumberField(array('step'=>'any'));
+    /**
+     * @return NumberField
+     */
+	private function createFieldDecimal(){
+		$formField=new NumberField(['step'=>'any']);
 		return $formField;
 	}
 
+    /**
+     * @param ClassMetadata $metaData
+     * @param string $fieldName
+     * @return NumberField
+     */
 	private function createFieldInteger($metaData,$fieldName){
-		if($metaData->isAssociationWithSingleJoinColumn($fieldName)){//references
-
-		}
-		else{//normal integer
+        $formField=null;
+		if(!$metaData->isAssociationWithSingleJoinColumn($fieldName)){
 			$formField=new NumberField(array());
 		}
 
 		return $formField;
 	}
 
+    /**
+     * @param string $fieldName
+     * @return string
+     */
 	private function translateName($fieldName) {
         $re = '/(?<=[a-z])(?=[A-Z])/x';
         $parts = preg_split($re, $fieldName);
         return ucfirst(join($parts, " "));
-}
+    }
 }

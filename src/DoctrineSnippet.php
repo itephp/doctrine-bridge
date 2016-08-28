@@ -16,6 +16,8 @@
 namespace ItePHP\Doctrine;
 
 use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\Query;
 use ItePHP\Core\Container;
 
 /**
@@ -34,7 +36,7 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $entity
+     * @param object $entity
      * @return ObjectRepository
      */
 	public function getRepository(Container $container,$entity){
@@ -43,10 +45,10 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $entity
-     * @param array $conditions
-     * @param array $orders
-     * @return array
+     * @param object $entity
+     * @param mixed[] $conditions
+     * @param string[] $orders
+     * @return object[]
      */
 	public function find(Container $container,$entity,$conditions=array(),$orders=array()){
 		return $this->getRepository($container,$entity)->findBy($conditions,$orders);
@@ -54,10 +56,10 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $entity
-     * @param array $conditions
-     * @param array $orders
-     * @return array
+     * @param object $entity
+     * @param mixed[] $conditions
+     * @param string[] $orders
+     * @return object[]
      */
 	public function findOne(Container $container,$entity,$conditions=array(),$orders=array()){
 		return $this->getRepository($container,$entity)->findBy($conditions,$orders,1);
@@ -72,7 +74,7 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $entity
+     * @param object $entity
      */
 	public function remove(Container $container,$entity){
 		return $this->getDoctrine($container)->getEntityManager()->remove($entity);
@@ -80,8 +82,8 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $dql
-     * @return \Doctrine\ORM\Query
+     * @param string $dql
+     * @return Query
      */
 	public function createQuery(Container $container,$dql){
 		return $this->getDoctrine($container)->getEntityManager()->createQuery($dql);
@@ -89,7 +91,7 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $entity
+     * @param object $entity
      */
 	public function persist(Container $container,$entity){
 		return $this->getDoctrine($container)->getEntityManager()->persist($entity);
@@ -97,9 +99,9 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $sql
-     * @param array $parameters
-     * @return array
+     * @param string $sql
+     * @param mixed[] $parameters
+     * @return mixed[][]
      */
 	public function executeQuery(Container $container,$sql,$parameters=array()){
 		$stmt=$this->getDoctrine($container)->getEntityManager()->getConnection()->prepare($sql);
@@ -109,7 +111,7 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @return \Doctrine\DBAL\Connection
+     * @return Connection
      */
 	public function getConnection(Container $container){
 		return $this->getDoctrine($container)->getEntityManager()->getConnection();
@@ -117,12 +119,10 @@ class DoctrineSnippet {
 
     /**
      * @param Container $container
-     * @param $value
+     * @param string $value
      * @return string
      */
 	public function escape(Container $container,$value){
 		return $this->getDoctrine($container)->getEntityManager()->getConnection()->quote($value);
-	}	
-
+	}
 }
-
