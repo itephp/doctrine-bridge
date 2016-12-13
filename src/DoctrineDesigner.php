@@ -15,17 +15,15 @@
 
 namespace ItePHP\Doctrine;
 
-use ItePHP\Component\Form\Designer;
-use ItePHP\Component\Form\FormBuilder;
-use ItePHP\Component\Form\TextField;
-use ItePHP\Component\Form\TextareaField;
-use ItePHP\Component\Form\NumberField;
-use ItePHP\Component\Form\SelectField;
-use ItePHP\Component\Form\CheckboxField;
-use ItePHP\Component\Form\DateField;
-
-
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Forma\Designer;
+use Forma\Field\CheckboxField;
+use Forma\Field\DateField;
+use Forma\Field\NumberField;
+use Forma\Field\SelectField;
+use Forma\Field\TextareaField;
+use Forma\Field\TextField;
+use Forma\FormBuilder;
 
 /**
  * Map entity to form.
@@ -89,7 +87,7 @@ class DoctrineDesigner implements Designer{
 	 * @throws DoctrineTypeNotSupportedException
 	 */
 	public function createField($form,$metaData,$fieldName){
-		$type=$metaData->getTypeOfColumn($fieldName);
+		$type=$metaData->getTypeOfField($metaData->getFieldName($fieldName));
 		switch($type){
 			case 'string':
 				$formField=$this->createFieldString();
@@ -132,7 +130,7 @@ class DoctrineDesigner implements Designer{
 	 * @param string $fieldName
 	 */
 	public function createAssociationField($form,$metaData,$fieldName){
-		$formField=new SelectField(array());
+		$formField=new SelectField();
 		$formField->setLabel($this->translateName($fieldName));
 		$formField->setName($fieldName);
 		$mapping=$metaData->getAssociationMapping($fieldName);
@@ -166,9 +164,9 @@ class DoctrineDesigner implements Designer{
 	}
 
     /**
-     * @param object $entity
+     * @param object[] $entity
      * @param bool $appendEmptyRecord
-     * @return string[][]
+     * @return mixed[]
      */
 	public static function entityToCollection($entity,$appendEmptyRecord){
 		$values=[];
@@ -176,9 +174,9 @@ class DoctrineDesigner implements Designer{
 			$values[]=['value'=>'','label'=>'Select...'];
 		}
 
-		foreach($entity as $record){
-			$values[]=['value'=>$record->getId(),'label'=>htmlspecialchars($record->__toString())];
-		}
+        foreach($entity as $record){
+            $values[]=['value'=>htmlspecialchars($record->getId()),'label'=>htmlspecialchars($record->__toString())];
+        }
 
 		return $values;
 	}
@@ -187,7 +185,7 @@ class DoctrineDesigner implements Designer{
      * @return TextField
      */
 	private function createFieldString(){
-		$formField=new TextField([]);
+		$formField=new TextField();
 		return $formField;
 	}
 
@@ -195,7 +193,7 @@ class DoctrineDesigner implements Designer{
      * @return DateField
      */
 	private function createFieldDateTime(){
-		$formField=new DateField([]);
+		$formField=new DateField();
 		return $formField;
 	}
 
@@ -203,7 +201,7 @@ class DoctrineDesigner implements Designer{
      * @return TextareaField
      */
 	private function createFieldText(){
-		$formField=new TextareaField([]);
+		$formField=new TextareaField();
 		return $formField;
 	}
 
@@ -211,7 +209,7 @@ class DoctrineDesigner implements Designer{
      * @return CheckboxField
      */
 	private function createFieldBoolean(){
-		$formField=new CheckboxField([]);
+		$formField=new CheckboxField();
 		return $formField;
 	}
 

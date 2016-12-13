@@ -18,7 +18,7 @@ namespace ItePHP\Doctrine;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\PersistentCollection;
-use ItePHP\Component\Form\Transformer;
+use Forma\Transformer;
 
 /**
  * Map entity to form.
