@@ -165,17 +165,13 @@ class DoctrineDesigner implements Designer{
 
     /**
      * @param object[] $entity
-     * @param bool $appendEmptyRecord
-     * @return mixed[]
+     * @param string $methodLabel
+     * @return \mixed[]
      */
-	public static function entityToCollection($entity,$appendEmptyRecord){
+	public static function entityToCollection($entity,$methodLabel='__toString'){
 		$values=[];
-		if($appendEmptyRecord){
-			$values[]=['value'=>'','label'=>'Select...'];
-		}
-
         foreach($entity as $record){
-            $values[]=['value'=>htmlspecialchars($record->getId()),'label'=>htmlspecialchars($record->__toString())];
+            $values[]=['value'=>htmlspecialchars($record->getId()),'label'=>htmlspecialchars($record->$methodLabel())];
         }
 
 		return $values;
